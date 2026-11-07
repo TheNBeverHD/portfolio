@@ -5,15 +5,14 @@ import './styles.css'
 
 const tr = (value: Localized, language: Language) => value[language]
 const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`
+const languageFromUrl = (): Language => new URLSearchParams(window.location.search).get('lang') === 'en' ? 'en' : 'uk'
 
 function ExternalLink({ href, children, className = '' }: { href: string; children: React.ReactNode; className?: string }) {
   return <a href={href} target="_blank" rel="noopener noreferrer" className={className}>{children}<span aria-hidden="true"> ↗</span></a>
 }
 
 function App() {
-  const [language, setLanguage] = useState<Language>(() => {
-    try { return localStorage.getItem('portfolio-language') === 'uk' ? 'uk' : 'en' } catch { return 'en' }
-  })
+  const [language, setLanguage] = useState<Language>(languageFromUrl)
   const [hash, setHash] = useState(() => window.location.hash)
   const [mobileOpen, setMobileOpen] = useState(false)
   const t = (value: Localized) => tr(value, language)
@@ -26,7 +25,19 @@ function App() {
   }, [])
 
   useEffect(() => {
-    try { localStorage.setItem('portfolio-language', language) } catch { /* private browsing */ }
+    const onPopState = () => setLanguage(languageFromUrl())
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
+
+  const selectLanguage = (nextLanguage: Language) => {
+    const url = new URL(window.location.href)
+    url.searchParams.set('lang', nextLanguage)
+    window.history.pushState(null, '', `${url.pathname}${url.search}${url.hash}`)
+    setLanguage(nextLanguage)
+  }
+
+  useEffect(() => {
     document.documentElement.lang = language === 'uk' ? 'uk' : 'en'
     const title = language === 'uk' ? 'Незалежна розробка програмного забезпечення' : 'Independent Software Engineering'
     document.title = activeProject ? `${activeProject.name} · ${title}` : title
@@ -63,9 +74,9 @@ function App() {
         </nav>
         <div className="nav-actions">
           <div className="lang-switch" role="group" aria-label={language === 'uk' ? 'Мова' : 'Language'}>
-            <button type="button" className={language === 'en' ? 'active' : ''} aria-pressed={language === 'en'} onClick={() => setLanguage('en')}>EN</button>
+            <button type="button" className={language === 'en' ? 'active' : ''} aria-pressed={language === 'en'} onClick={() => selectLanguage('en')}>EN</button>
             <span aria-hidden="true">/</span>
-            <button type="button" className={language === 'uk' ? 'active' : ''} aria-pressed={language === 'uk'} onClick={() => setLanguage('uk')}>UA</button>
+            <button type="button" className={language === 'uk' ? 'active' : ''} aria-pressed={language === 'uk'} onClick={() => selectLanguage('uk')}>UA</button>
           </div>
           <ExternalLink href={links.telegram} className="nav-contact">{t(copy.nav.contact)}</ExternalLink>
           <button className="menu-toggle" type="button" aria-expanded={mobileOpen} aria-controls="mobile-navigation" aria-label={mobileOpen ? (language === 'uk' ? 'Закрити меню' : 'Close menu') : (language === 'uk' ? 'Відкрити меню' : 'Open menu')} onClick={() => setMobileOpen(v => !v)}><span></span><span></span></button>

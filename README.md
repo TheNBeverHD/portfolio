@@ -47,4 +47,4 @@ No public live demo was verified for any of these projects, so the portfolio lin
 
 `npm run typecheck` and `npm run build` passed. The deployed site was opened in a browser and its main portfolio content loaded successfully.
 
-To edit translations, services, technology groups, and project studies, update `src/content.ts`. Every localized string has `en` and `uk` values. The selected language is stored in `localStorage` and applied without reloading. Project studies use hash URLs (`#project/...`) so direct links and reloads work on GitHub Pages without server rewrites.
+To edit translations, services, technology groups, and project studies, update `src/content.ts`. Every localized string has `en` and `uk` values. Ukrainian is the default language; add `?lang=en` or `?lang=uk` to the URL to choose a language. The language switcher updates the URL, so the selected language can be shared as a link. Project studies use hash URLs (`#project/...`) and work with the language parameter on GitHub Pages without server rewrites.
